@@ -32,7 +32,7 @@
             this.Email = new System.Windows.Forms.Label();
             this.CPF = new System.Windows.Forms.Label();
             this.txtNome = new System.Windows.Forms.MaskedTextBox();
-            this.txtCpf = new System.Windows.Forms.MaskedTextBox();
+            this.txtSenha = new System.Windows.Forms.MaskedTextBox();
             this.txtEmail = new System.Windows.Forms.MaskedTextBox();
             this.btnAdicionar = new System.Windows.Forms.Button();
             this.btnExcluir = new System.Windows.Forms.Button();
@@ -69,9 +69,9 @@
             this.CPF.AutoSize = true;
             this.CPF.Location = new System.Drawing.Point(12, 423);
             this.CPF.Name = "CPF";
-            this.CPF.Size = new System.Drawing.Size(27, 13);
+            this.CPF.Size = new System.Drawing.Size(38, 13);
             this.CPF.TabIndex = 2;
-            this.CPF.Text = "CPF";
+            this.CPF.Text = "Senha";
             // 
             // txtNome
             // 
@@ -80,12 +80,13 @@
             this.txtNome.Size = new System.Drawing.Size(261, 20);
             this.txtNome.TabIndex = 3;
             // 
-            // txtCpf
+            // txtSenha
             // 
-            this.txtCpf.Location = new System.Drawing.Point(69, 423);
-            this.txtCpf.Name = "txtCpf";
-            this.txtCpf.Size = new System.Drawing.Size(261, 20);
-            this.txtCpf.TabIndex = 4;
+            this.txtSenha.Location = new System.Drawing.Point(69, 423);
+            this.txtSenha.Name = "txtSenha";
+            this.txtSenha.PasswordChar = '*';
+            this.txtSenha.Size = new System.Drawing.Size(261, 20);
+            this.txtSenha.TabIndex = 4;
             // 
             // txtEmail
             // 
@@ -178,7 +179,7 @@
             this.Controls.Add(this.btnExcluir);
             this.Controls.Add(this.btnAdicionar);
             this.Controls.Add(this.txtEmail);
-            this.Controls.Add(this.txtCpf);
+            this.Controls.Add(this.txtSenha);
             this.Controls.Add(this.txtNome);
             this.Controls.Add(this.CPF);
             this.Controls.Add(this.Email);
@@ -199,7 +200,7 @@
         private System.Windows.Forms.Label Email;
         private System.Windows.Forms.Label CPF;
         private System.Windows.Forms.MaskedTextBox txtNome;
-        private System.Windows.Forms.MaskedTextBox txtCpf;
+        private System.Windows.Forms.MaskedTextBox txtSenha;
         private System.Windows.Forms.MaskedTextBox txtEmail;
         private System.Windows.Forms.Button btnAdicionar;
         private System.Windows.Forms.Button btnExcluir;

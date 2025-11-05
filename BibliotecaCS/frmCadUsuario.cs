@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text;
 using System.Windows.Forms;
+using BibliotecaCS;
 using QRCoder;
 
 namespace WindowsFormsApp1
@@ -10,7 +14,6 @@ namespace WindowsFormsApp1
     public partial class frmCadUsuario : Form
     {
         private List<Usuario> usuarios = new List<Usuario>();
-        private int proximoId = 1;
         private string caminhoImagem = "";
 
         public frmCadUsuario()
@@ -33,27 +36,54 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void btnAdicionar_Click(object sender, EventArgs e)
+        private async void btnAdicionar_Click(object sender, EventArgs e)
         {
-            // validação simples
-            if (string.IsNullOrWhiteSpace(txtNome.Text) || string.IsNullOrWhiteSpace(txtEmail.Text) || string.IsNullOrWhiteSpace(txtCpf.Text))
+            string nome = txtNome.Text.Trim();
+            string email = txtEmail.Text.Trim();
+            string senha = txtSenha.Text.Trim();
+
+            if (string.IsNullOrEmpty(nome) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(senha))
             {
-                MessageBox.Show("Preencha todos os campos antes de adicionar.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Preencha todos os campos!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            Usuario u = new Usuario
+            using (HttpClient client = new HttpClient())
             {
-                Id = proximoId++,
-                Nome = txtNome.Text,
-                Email = txtEmail.Text,
-                Cpf = txtCpf.Text,
-                Imagem = caminhoImagem
-            };
+                try
+                {
+                    string url = "http://localhost:3000/users";
 
-            usuarios.Add(u);
-            AtualizarGrid();
-            GerarQRCode(u); // agora o QRCode aparece e não é limpo logo após
+                    var body = new
+                    {
+                        nome = nome,
+                        email = email,
+                        senha = senha
+                    };
+
+                    var json = JsonSerializer.Serialize(body);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await client.PostAsync(url, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Usuário cadastrado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        txtNome.Clear();
+                        txtEmail.Clear();
+                        txtSenha.Clear();
+                    }
+                    else
+                    {
+                        string result = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show($"Erro ao cadastrar: {result}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erro ao conectar à API: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         private void btnExcluir_Click(object sender, EventArgs e)
@@ -80,8 +110,8 @@ namespace WindowsFormsApp1
             {
                 u.Nome = txtNome.Text;
                 u.Email = txtEmail.Text;
-                u.Cpf = txtCpf.Text;
-                u.Imagem = caminhoImagem;
+                u.Senha = txtSenha.Text;
+                u.CaminhoImagem = caminhoImagem;
             }
 
             AtualizarGrid();
@@ -98,7 +128,7 @@ namespace WindowsFormsApp1
         {
             txtNome.Clear();
             txtEmail.Clear();
-            txtCpf.Clear();
+            txtSenha.Clear();
             picUsuario.Image = null;
             picQRCode.Image = null;
             caminhoImagem = "";
@@ -106,7 +136,7 @@ namespace WindowsFormsApp1
 
         private void GerarQRCode(Usuario u)
         {
-            string dados = $"Nome: {u.Nome}\nEmail: {u.Email}\nCPF: {u.Cpf}";
+            string dados = $"Nome: {u.Nome}\nEmail: {u.Email}\nCPF: {u.Senha}";
 
             QRCodeGenerator qr = new QRCodeGenerator();
             QRCodeData data = qr.CreateQrCode(dados, QRCodeGenerator.ECCLevel.Q);

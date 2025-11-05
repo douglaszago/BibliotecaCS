@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BibliotecaCS;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,11 +12,21 @@ namespace WindowsFormsApp1
 {
     public partial class frmPrincipal : Form
     {
-        private Panel minimizedFormsPanel;
+        private Usuario _usuarioLogado; // 👈 guarda o usuário logado
 
+        // Construtor padrão (caso seja chamado sem login)
         public frmPrincipal()
         {
             InitializeComponent();
+        }
+
+        public frmPrincipal(Usuario usuario)
+        {
+            InitializeComponent();
+            _usuarioLogado = usuario;
+
+            // Exibe mensagem de boas-vindas
+            MessageBox.Show($"Bem-vindo, {_usuarioLogado.Nome}!", "Login realizado", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
