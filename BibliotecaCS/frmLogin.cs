@@ -1,18 +1,24 @@
 ﻿using System;
-using System.Net.Http;
-using System.Text.Json;
-using System.Text;
 using System.Windows.Forms;
+using BibliotecaCS.Application;
+using BibliotecaCS.Domain;
 using WindowsFormsApp1;
+using BibliotecaCS.Application;
+using BibliotecaCS.Domain;
 
 
 namespace BibliotecaCS
 {
     public partial class frmLogin : Form
     {
+        private readonly LoginController _controller;
+
         public frmLogin()
         {
             InitializeComponent();
+
+            // Injeta o repositório da API no controller
+            _controller = new LoginController(new ApiUsuarioRepository());
         }
 
         private async void btnEntrar_Click(object sender, EventArgs e)
@@ -26,57 +32,35 @@ namespace BibliotecaCS
                 return;
             }
 
-            using (HttpClient client = new HttpClient())
+            try
             {
-                try
+                var usuario = await _controller.AutenticarAsync(email, senha);
+
+                if (usuario == null)
                 {
-                    string url = "http://localhost:3000/users/login";
-
-                    var body = new
-                    {
-                        email = email,
-                        senha = senha
-                    };
-
-                    var json = JsonSerializer.Serialize(body);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    var response = await client.PostAsync(url, content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string result = await response.Content.ReadAsStringAsync();
-
-                        // Converte a resposta em um objeto anônimo
-                        var jsonResponse = JsonSerializer.Deserialize<JsonElement>(result);
-                        var user = jsonResponse.GetProperty("user");
-
-                        string nome = user.GetProperty("nome").GetString();
-
-                        MessageBox.Show($"Bem-vindo, {nome}!", "Login realizado", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        frmPrincipal principal = new frmPrincipal();
-                        principal.Show();
-                        this.Hide();
-                    }
-                    else
-                    {
-                        MessageBox.Show("E-mail ou senha inválidos!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    MessageBox.Show("E-mail ou senha inválidos.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Erro ao conectar à API: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+
+                // Notifica os interessados (Observer)
+                LoginNotifier.Notify(usuario);
+
+                MessageBox.Show($"Bem-vindo, {usuario.Nome}!", "Login realizado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                var principal = new frmPrincipal();
+                principal.Show();
+                this.Hide();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao conectar à API: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-
-
         private void frmLogin_FormClosed(object sender, FormClosedEventArgs e)
         {
-            // se fechar o login, fecha tudo
-            Application.Exit();
+            System.Windows.Forms.Application.Exit();
+
         }
     }
 }
